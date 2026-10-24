@@ -1,0 +1,14 @@
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+coverage/
+
+# Generated demo data (DuckDB files built from the sample-data generator, local PGlite)
+.data/
+
+# Env / editors / OS
+.env
+.idea/
+.vscode/
+.DS_Store

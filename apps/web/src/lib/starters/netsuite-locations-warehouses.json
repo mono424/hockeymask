@@ -1,0 +1,165 @@
+{
+  "tables": {
+    "location_type": {
+      "Warehouse": "WAREHOUSE",
+      "Store": "STORE",
+      "3PL": "THIRD_PARTY"
+    }
+  },
+  "nodes": [
+    {
+      "id": "locations",
+      "op": "source",
+      "label": "location",
+      "entity": "location",
+      "system": "netsuite"
+    },
+    {
+      "id": "stock_holding",
+      "op": "filter",
+      "label": "not offices",
+      "in": "locations",
+      "cond": {
+        "path": "locationtype",
+        "neq": "Office"
+      }
+    },
+    {
+      "id": "warehouses",
+      "op": "map",
+      "in": "stock_holding",
+      "fields": [
+        {
+          "key": "source_system",
+          "pipeline": [
+            {
+              "op": "const",
+              "value": "NetSuite"
+            }
+          ]
+        },
+        {
+          "key": "source_id",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "id"
+            },
+            {
+              "op": "require"
+            },
+            {
+              "op": "to_string"
+            }
+          ]
+        },
+        {
+          "key": "secondary_source_id",
+          "pipeline": [
+            {
+              "op": "const",
+              "value": ""
+            }
+          ]
+        },
+        {
+          "key": "name",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "name"
+            },
+            {
+              "op": "trim"
+            },
+            {
+              "op": "require"
+            }
+          ]
+        },
+        {
+          "key": "type",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "locationtype"
+            },
+            {
+              "op": "lookup",
+              "table": "location_type",
+              "on_miss": "error"
+            }
+          ]
+        },
+        {
+          "key": "country",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "country"
+            },
+            {
+              "op": "blank_to_null"
+            }
+          ]
+        },
+        {
+          "key": "city",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "city"
+            },
+            {
+              "op": "blank_to_null"
+            }
+          ]
+        },
+        {
+          "key": "active",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "isinactive"
+            },
+            {
+              "op": "to_bool",
+              "true_values": ["F"],
+              "false_values": ["T"]
+            },
+            {
+              "op": "default",
+              "value": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "write_warehouses",
+      "op": "sink",
+      "label": "warehouse",
+      "in": "warehouses",
+      "key": ["source_system", "source_id", "secondary_source_id"],
+      "target": "warehouse"
+    }
+  ],
+  "layout": {
+    "locations": {
+      "x": 110,
+      "y": 20
+    },
+    "stock_holding": {
+      "x": 416,
+      "y": 20
+    },
+    "warehouses": {
+      "x": 722,
+      "y": 20
+    },
+    "write_warehouses": {
+      "x": 1028,
+      "y": 20
+    }
+  }
+}

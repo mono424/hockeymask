@@ -1,0 +1,272 @@
+{
+  "nodes": [
+    {
+      "id": "items",
+      "op": "source",
+      "label": "item",
+      "entity": "item",
+      "system": "netsuite"
+    },
+    {
+      "id": "classes",
+      "op": "source",
+      "label": "classification",
+      "entity": "classification",
+      "system": "netsuite"
+    },
+    {
+      "id": "with_class",
+      "op": "join",
+      "label": "item + class",
+      "left": "items",
+      "right": "classes",
+      "type": "left",
+      "on": [["class", "id"]],
+      "select": {
+        "id": "class_id"
+      },
+      "cardinality": "n:1"
+    },
+    {
+      "id": "products",
+      "op": "map",
+      "in": "with_class",
+      "fields": [
+        {
+          "key": "source_system",
+          "pipeline": [
+            {
+              "op": "const",
+              "value": "NetSuite"
+            }
+          ]
+        },
+        {
+          "key": "source_id",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "id"
+            },
+            {
+              "op": "require"
+            },
+            {
+              "op": "to_string"
+            }
+          ]
+        },
+        {
+          "key": "secondary_source_id",
+          "pipeline": [
+            {
+              "op": "const",
+              "value": ""
+            }
+          ]
+        },
+        {
+          "key": "sku",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "itemid"
+            },
+            {
+              "op": "trim"
+            },
+            {
+              "op": "require"
+            }
+          ]
+        },
+        {
+          "key": "title",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "displayname"
+            },
+            {
+              "op": "trim"
+            },
+            {
+              "op": "require"
+            }
+          ]
+        },
+        {
+          "key": "ean",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "upccode"
+            },
+            {
+              "op": "blank_to_null"
+            }
+          ]
+        },
+        {
+          "key": "price",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "baseprice"
+            }
+          ]
+        },
+        {
+          "key": "cost",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "cost"
+            }
+          ]
+        },
+        {
+          "key": "category_id",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "class_id"
+            },
+            {
+              "op": "to_string"
+            }
+          ]
+        },
+        {
+          "key": "weight",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": ["weight", "weightunit"]
+            },
+            {
+              "op": "convert_unit",
+              "to": "g"
+            }
+          ]
+        },
+        {
+          "key": "length",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "custitem_length_mm"
+            },
+            {
+              "op": "if_lte",
+              "value": 0,
+              "then": null
+            },
+            {
+              "op": "divide",
+              "by": 1000
+            }
+          ]
+        },
+        {
+          "key": "width",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "custitem_width_mm"
+            },
+            {
+              "op": "if_lte",
+              "value": 0,
+              "then": null
+            },
+            {
+              "op": "divide",
+              "by": 1000
+            }
+          ]
+        },
+        {
+          "key": "height",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "custitem_height_mm"
+            },
+            {
+              "op": "if_lte",
+              "value": 0,
+              "then": null
+            },
+            {
+              "op": "divide",
+              "by": 1000
+            }
+          ]
+        },
+        {
+          "key": "active",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "isinactive"
+            },
+            {
+              "op": "to_bool",
+              "true_values": ["F"],
+              "false_values": ["T"]
+            }
+          ]
+        },
+        {
+          "key": "launch_date",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "custitem_launch_date"
+            },
+            {
+              "op": "to_date",
+              "format": "YYYY-MM-DD"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "write_products",
+      "op": "sink",
+      "label": "product",
+      "in": "products",
+      "key": ["source_system", "source_id", "secondary_source_id"],
+      "refs": {
+        "category_id": {
+          "by": ["source_id"]
+        }
+      },
+      "target": "product"
+    }
+  ],
+  "layout": {
+    "items": {
+      "x": 110,
+      "y": 20
+    },
+    "classes": {
+      "x": 110,
+      "y": 180
+    },
+    "with_class": {
+      "x": 416,
+      "y": 100
+    },
+    "products": {
+      "x": 722,
+      "y": 100
+    },
+    "write_products": {
+      "x": 1028,
+      "y": 100
+    }
+  }
+}

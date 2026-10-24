@@ -1,0 +1,57 @@
+{
+  "name": "@hockeymask/core",
+  "version": "0.1.0",
+  "description": "Logic of hockeymask: source/target schemas, the connector contract and the mapping graph (DAG) model.",
+  "keywords": [
+    "dag",
+    "etl",
+    "integration",
+    "mapping",
+    "schema",
+    "transform"
+  ],
+  "homepage": "https://github.com/mono424/hockeymask#readme",
+  "bugs": {
+    "url": "https://github.com/mono424/hockeymask/issues"
+  },
+  "license": "MIT",
+  "author": "Khadim Fall",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mono424/hockeymask.git",
+    "directory": "packages/core"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "publishConfig": {
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      }
+    },
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vp pack",
+    "prepublishOnly": "vp pack",
+    "test": "vp test",
+    "test:coverage": "vp test run --coverage"
+  },
+  "dependencies": {
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "5.0.1",
+    "vite-plus": "catalog:"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

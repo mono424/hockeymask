@@ -1,0 +1,335 @@
+/*
+  @hockeymask/react styles. Plain CSS, dark by default; hosts re-theme through the --hm-*
+  custom properties. Includes React Flow's base stylesheet.
+*/
+@import '@xyflow/react/dist/style.css';
+
+:root {
+  --hm-font-sans: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
+  --hm-font-mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  --hm-canvas: #0b0c0d;
+  --hm-dots: #1d1e21;
+  --hm-surface: #131416;
+  --hm-inset: #0e0f10;
+  --hm-raised: #1b1c1f;
+  --hm-border: #222326;
+  --hm-border-strong: #34363b;
+  --hm-text: #ececed;
+  --hm-muted: #8a8f98;
+  --hm-faint: #5c6068;
+  --hm-edge: #4a4c52;
+  --hm-edge-selected: #c9cbd0;
+  --hm-source: #7da2ff;
+  --hm-transform: #b197fc;
+  --hm-target: #5fd68f;
+  --hm-check: #f0b85a;
+  --hm-error: #f2726f;
+  --hm-radius: 10px;
+}
+
+.hm-builder {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  background: var(--hm-canvas);
+  color: var(--hm-text);
+  font-family: var(--hm-font-sans);
+}
+
+.hm-builder .react-flow {
+  --xy-background-color: var(--hm-canvas);
+  --xy-background-pattern-color: var(--hm-dots);
+  --xy-edge-stroke: var(--hm-edge);
+  --xy-edge-stroke-selected: var(--hm-edge-selected);
+  --xy-edge-stroke-width: 1.25;
+  --xy-connectionline-stroke: var(--hm-edge-selected);
+  --xy-controls-button-background-color: var(--hm-surface);
+  --xy-controls-button-background-color-hover: var(--hm-raised);
+  --xy-controls-button-color: var(--hm-muted);
+  --xy-controls-button-color-hover: var(--hm-text);
+  --xy-controls-button-border-color: var(--hm-border);
+  --xy-controls-box-shadow: none;
+  --xy-attribution-background-color: transparent;
+  --xy-selection-background-color: rgb(237 237 237 / 6%);
+  --xy-selection-border: 1px dashed var(--hm-faint);
+}
+
+.hm-builder .react-flow__controls {
+  overflow: hidden;
+  border: 1px solid var(--hm-border);
+  border-radius: 8px;
+}
+
+.hm-builder .react-flow__attribution a {
+  color: var(--hm-faint);
+}
+
+/* Edges feeding the selected node, back to its inputs, in that node's category colour. */
+.hm-builder .hm-edge--upstream {
+  --hm-category: var(--hm-edge-selected);
+}
+
+.hm-builder .hm-edge--source {
+  --hm-category: var(--hm-source);
+}
+
+.hm-builder .hm-edge--transform {
+  --hm-category: var(--hm-transform);
+}
+
+.hm-builder .hm-edge--target {
+  --hm-category: var(--hm-target);
+}
+
+.hm-builder .hm-edge--check {
+  --hm-category: var(--hm-check);
+}
+
+.hm-builder .hm-edge--upstream .react-flow__edge-path {
+  stroke: var(--hm-category);
+  stroke-width: 1.75;
+}
+
+.hm-builder .hm-edge--error .react-flow__edge-path {
+  stroke: var(--hm-error);
+}
+
+/* --- node ------------------------------------------------------------------------- */
+
+.hm-node {
+  --hm-category: var(--hm-faint);
+  position: relative;
+  width: 216px;
+  margin-top: 10px; /* room for the tag on the top edge */
+  padding-bottom: 12px;
+  background: var(--hm-surface);
+  border: 1px solid var(--hm-border);
+  border-radius: var(--hm-radius);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 3%),
+    0 6px 16px -8px rgb(0 0 0 / 60%);
+  color: var(--hm-text);
+  font-size: 12px;
+  letter-spacing: -0.006em;
+  transition:
+    border-color 120ms,
+    box-shadow 120ms;
+}
+
+.hm-node--source {
+  --hm-category: var(--hm-source);
+}
+
+.hm-node--transform {
+  --hm-category: var(--hm-transform);
+}
+
+.hm-node--target {
+  --hm-category: var(--hm-target);
+}
+
+.hm-node--check {
+  --hm-category: var(--hm-check);
+}
+
+.hm-node--error {
+  border-color: color-mix(in srgb, var(--hm-error) 45%, var(--hm-border));
+}
+
+.hm-node--selected {
+  border-color: var(--hm-border-strong);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 4%),
+    0 0 0 3px rgb(236 236 237 / 6%);
+}
+
+.hm-node__tag {
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0 6px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--hm-category) 16%, var(--hm-surface));
+  border: 1px solid color-mix(in srgb, var(--hm-category) 32%, transparent);
+  color: var(--hm-category);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 16px;
+}
+
+.hm-node__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 12px 0;
+}
+
+.hm-node__icon {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  background: var(--hm-raised);
+  color: var(--hm-category);
+}
+
+.hm-node__label {
+  flex: 1;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hm-node__issues {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--hm-error) 18%, transparent);
+  color: var(--hm-error);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.hm-node__description {
+  margin: 6px 12px 0;
+  color: var(--hm-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Labelled rows, only for a side with several ports (e.g. a join's left and right). */
+.hm-port {
+  position: relative;
+  height: 22px;
+  margin-top: 4px;
+  padding: 0 12px;
+  color: var(--hm-faint);
+  font-size: 11px;
+  line-height: 22px;
+}
+
+.hm-port--out {
+  text-align: right;
+}
+
+.hm-builder .hm-handle.react-flow__handle {
+  width: 8px;
+  height: 8px;
+  background: var(--hm-faint);
+  border: 2px solid var(--hm-canvas);
+}
+
+.hm-builder .react-flow__handle.connectingto.valid,
+.hm-builder .react-flow__handle.valid {
+  background: var(--hm-edge-selected);
+}
+
+/* --- chrome ----------------------------------------------------------------------- */
+
+.hm-builder .react-flow__controls-button {
+  width: 28px;
+  height: 28px;
+  padding: 7px;
+}
+
+.hm-empty {
+  margin-top: 64px;
+  padding: 8px 14px;
+  border: 1px dashed var(--hm-border-strong);
+  border-radius: 10px;
+  background: var(--hm-surface);
+  color: var(--hm-muted);
+  font-size: 13px;
+}
+
+/* --- palette ---------------------------------------------------------------------- */
+
+.hm-palette {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-family: var(--hm-font-sans);
+  color: var(--hm-text);
+}
+
+.hm-palette__group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hm-palette__title {
+  margin: 0;
+  color: var(--hm-faint);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.hm-palette__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--hm-text);
+  text-align: left;
+  cursor: grab;
+}
+
+.hm-palette__item:hover {
+  background: var(--hm-raised);
+}
+
+.hm-palette__icon {
+  display: grid;
+  color: var(--hm-muted);
+}
+
+.hm-palette__label {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.hm-palette__type {
+  margin-left: auto;
+  color: var(--hm-faint);
+  font-family: var(--hm-font-mono);
+  font-size: 10px;
+}
+
+.hm-palette--horizontal,
+.hm-palette--horizontal .hm-palette__group {
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+}
+
+.hm-palette--horizontal .hm-palette__title {
+  padding: 0 8px 0 6px;
+}
+
+.hm-palette--horizontal .hm-palette__item {
+  width: auto;
+  padding: 5px 11px;
+  border-radius: 999px;
+}
+
+.hm-palette--horizontal .hm-palette__type {
+  display: none;
+}

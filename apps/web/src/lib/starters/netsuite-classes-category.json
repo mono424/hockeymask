@@ -1,0 +1,122 @@
+{
+  "nodes": [
+    {
+      "id": "classes",
+      "op": "source",
+      "label": "classification",
+      "entity": "classification",
+      "system": "netsuite"
+    },
+    {
+      "id": "with_parent",
+      "op": "join",
+      "label": "class + parent",
+      "left": "classes",
+      "right": "classes",
+      "type": "left",
+      "on": [["parent", "id"]],
+      "select": {
+        "id": "parent_class_id"
+      },
+      "cardinality": "n:1"
+    },
+    {
+      "id": "categories",
+      "op": "map",
+      "in": "with_parent",
+      "fields": [
+        {
+          "key": "source_system",
+          "pipeline": [
+            {
+              "op": "const",
+              "value": "NetSuite"
+            }
+          ]
+        },
+        {
+          "key": "source_id",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "id"
+            },
+            {
+              "op": "require"
+            },
+            {
+              "op": "to_string"
+            }
+          ]
+        },
+        {
+          "key": "secondary_source_id",
+          "pipeline": [
+            {
+              "op": "const",
+              "value": ""
+            }
+          ]
+        },
+        {
+          "key": "name",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "name"
+            },
+            {
+              "op": "trim"
+            },
+            {
+              "op": "require"
+            }
+          ]
+        },
+        {
+          "key": "parent_id",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "parent_class_id"
+            },
+            {
+              "op": "to_string"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "write_categories",
+      "op": "sink",
+      "label": "category",
+      "in": "categories",
+      "key": ["source_system", "source_id", "secondary_source_id"],
+      "refs": {
+        "parent_id": {
+          "by": ["source_id"]
+        }
+      },
+      "target": "category"
+    }
+  ],
+  "layout": {
+    "classes": {
+      "x": 110,
+      "y": 20
+    },
+    "with_parent": {
+      "x": 416,
+      "y": 20
+    },
+    "categories": {
+      "x": 722,
+      "y": 20
+    },
+    "write_categories": {
+      "x": 1028,
+      "y": 20
+    }
+  }
+}

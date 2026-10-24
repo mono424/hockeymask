@@ -1,0 +1,157 @@
+{
+  "nodes": [
+    {
+      "id": "snapshots",
+      "op": "source",
+      "label": "stock snapshot",
+      "entity": "ANALYTICS.INVENTORY.STOCK_SNAPSHOT",
+      "system": "snowflake"
+    },
+    {
+      "id": "per_day",
+      "op": "aggregate",
+      "label": "sum over bins",
+      "in": "snapshots",
+      "group_by": ["ITEM_ID", "LOCATION_ID", "SNAPSHOT_DATE"],
+      "fields": {
+        "on_hand": {
+          "agg": "sum",
+          "path": "ON_HAND"
+        },
+        "reserved": {
+          "agg": "sum",
+          "path": "RESERVED"
+        }
+      }
+    },
+    {
+      "id": "latest",
+      "op": "aggregate",
+      "label": "latest day",
+      "in": "per_day",
+      "group_by": ["ITEM_ID", "LOCATION_ID"],
+      "fields": {
+        "as_of": {
+          "agg": "max",
+          "path": "SNAPSHOT_DATE"
+        },
+        "on_hand": {
+          "agg": "last",
+          "path": "on_hand",
+          "order_by": ["SNAPSHOT_DATE"]
+        },
+        "reserved": {
+          "agg": "last",
+          "path": "reserved",
+          "order_by": ["SNAPSHOT_DATE"]
+        }
+      }
+    },
+    {
+      "id": "levels",
+      "op": "map",
+      "in": "latest",
+      "fields": [
+        {
+          "key": "product_id",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "ITEM_ID"
+            },
+            {
+              "op": "to_string"
+            }
+          ]
+        },
+        {
+          "key": "warehouse_id",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "LOCATION_ID"
+            },
+            {
+              "op": "to_string"
+            }
+          ]
+        },
+        {
+          "key": "on_hand",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "on_hand"
+            },
+            {
+              "op": "require"
+            }
+          ]
+        },
+        {
+          "key": "reserved",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "reserved"
+            }
+          ]
+        },
+        {
+          "key": "as_of",
+          "pipeline": [
+            {
+              "op": "extract",
+              "path": "as_of"
+            },
+            {
+              "op": "require"
+            },
+            {
+              "op": "to_date",
+              "format": "YYYY-MM-DD"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "write_levels",
+      "op": "sink",
+      "label": "inventory_level",
+      "in": "levels",
+      "key": ["product_id", "warehouse_id"],
+      "refs": {
+        "product_id": {
+          "by": ["source_id"]
+        },
+        "warehouse_id": {
+          "by": ["source_id"]
+        }
+      },
+      "target": "inventory_level"
+    }
+  ],
+  "layout": {
+    "snapshots": {
+      "x": 110,
+      "y": 20
+    },
+    "per_day": {
+      "x": 416,
+      "y": 20
+    },
+    "latest": {
+      "x": 722,
+      "y": 20
+    },
+    "levels": {
+      "x": 1028,
+      "y": 20
+    },
+    "write_levels": {
+      "x": 1334,
+      "y": 20
+    }
+  }
+}

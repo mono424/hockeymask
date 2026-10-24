@@ -1,0 +1,1152 @@
+@import 'tailwindcss';
+
+/*
+  Dark only, Linear-like: the rail sits on the page, the main content is one quiet card.
+  4px spacing grid, 13px base type, hairline borders, one light accent.
+*/
+@theme {
+  --font-sans: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --color-page: #08090a;
+  --color-frame: #0f1011;
+  --color-panel: #0f1011;
+  --color-raised: #17181b;
+  --color-selected: #1d1e22;
+  --color-line: #1d1e21;
+  --color-line-strong: #2a2c30;
+  --color-canvas: #0b0c0d;
+  --color-fg: #ececed;
+  --color-muted: #8a8f98;
+  --color-faint: #5c6068;
+  --color-ok: #4cc38a;
+  --color-down: #eb6f6f;
+  --color-num: #8fb3ff;
+  --color-flag: #c4a5ff;
+  --color-marker: #e9cf72;
+}
+
+@layer base {
+  /* rem stays 16px so Tailwind sizes are what they say (h-8 = 32px); text is 13px on body. */
+  html {
+    color-scheme: dark;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background: var(--color-page);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-feature-settings: 'cv11', 'ss01';
+    letter-spacing: -0.006em;
+    line-height: 1.45;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-line-strong);
+    outline-offset: 1px;
+  }
+
+  ::selection {
+    background: rgb(236 236 237 / 16%);
+  }
+}
+
+@layer components {
+  /* Every surface on the page background: the panels and the main content. */
+  .card {
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    background: var(--color-frame);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 3%),
+      0 12px 32px -16px rgb(0 0 0 / 70%);
+  }
+
+  /* Customer-defined (custom) fields keep a highlighter tint. */
+  .marker {
+    color: var(--color-marker);
+  }
+
+  .btn {
+    display: inline-flex;
+    height: 28px;
+    align-items: center;
+    gap: 6px;
+    border-radius: 6px;
+    padding: 0 10px;
+    border: 1px solid var(--color-line);
+    background: var(--color-raised);
+    color: var(--color-fg);
+    font-size: 12.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition:
+      background-color 120ms,
+      border-color 120ms;
+  }
+
+  .btn:hover:not(:disabled) {
+    border-color: var(--color-line-strong);
+    background: var(--color-selected);
+  }
+
+  .btn-primary {
+    border-color: transparent;
+    background: var(--color-fg);
+    color: var(--color-frame);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    border-color: transparent;
+    background: #ffffff;
+  }
+
+  .btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+  }
+
+  .field {
+    width: 100%;
+    height: 36px;
+    border: 1px solid var(--color-line);
+    border-radius: 6px;
+    background: var(--color-canvas);
+    color: var(--color-fg);
+    padding: 0 10px;
+    transition: border-color 120ms;
+  }
+
+  textarea.field {
+    height: auto;
+    padding: 8px 10px;
+  }
+
+  .field::placeholder {
+    color: var(--color-faint);
+  }
+
+  .field:focus {
+    outline: none;
+    border-color: var(--color-line-strong);
+    box-shadow: 0 0 0 3px rgb(236 236 237 / 5%);
+  }
+
+  .label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--color-muted);
+    font-size: 12px;
+    font-weight: 500;
+  }
+}
+
+/* Select popover: a quick fade and scale from the trigger. */
+.select-content {
+  transform-origin: var(--radix-select-content-transform-origin);
+  animation: select-in 120ms ease-out;
+}
+
+@keyframes select-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(-2px);
+  }
+}
+
+/* Side panels slide over the canvas from their edge; they stay mounted (inert) when hidden. */
+.panel-slot {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  z-index: 20;
+  display: flex;
+  transition:
+    transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 180ms ease;
+}
+
+.panel-slot--left {
+  left: 8px;
+  transform: translateX(calc(-100% - 16px));
+}
+
+.panel-slot--right {
+  right: 8px;
+  transform: translateX(calc(100% + 16px));
+}
+
+.panel-slot:not(.is-open) {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.panel-slot.is-open {
+  transform: none;
+}
+
+/* Content that moves out of the panels' way eases along with them. */
+.inset-motion {
+  transition:
+    left 240ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    right 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* React Flow's own corner panels (zoom controls, attribution) clear the overlaid side panels. */
+.hm-builder .react-flow__panel.left {
+  margin-left: var(--inset-l, 15px);
+  transition: margin-left 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.hm-builder .react-flow__panel.right {
+  margin-right: var(--inset-r, 15px);
+  transition: margin-right 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel-slot,
+  .inset-motion,
+  .hm-builder .react-flow__panel {
+    transition: none;
+  }
+}
+
+.hm-builder .react-flow__panel.bottom {
+  margin-bottom: 8px;
+}
+
+/* prompt bar ---------------------------------------------------------------------------- */
+/*
+  The frosted input floating at the bottom of the canvas. Matte glass: a blurred, tinted
+  backdrop with a faint grain on top and a hairline highlight along the upper edge. It sinks
+  below the canvas edge while the agent panel is open.
+*/
+.prompt-dock {
+  position: absolute;
+  bottom: 16px;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  /* Wider on the left, clear of React Flow's zoom controls in that corner. */
+  padding: 0 16px 0 44px;
+  pointer-events: none;
+}
+
+.prompt-glass {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  overflow: hidden;
+  pointer-events: auto;
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 5%), rgb(255 255 255 / 1%) 60%), rgb(22 23 26 / 58%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 8%),
+    0 28px 64px -24px rgb(0 0 0 / 85%),
+    0 2px 10px rgb(0 0 0 / 35%);
+  backdrop-filter: blur(22px) saturate(140%);
+  transition:
+    transform 320ms var(--ease-out),
+    opacity 220ms ease,
+    border-color 160ms ease;
+}
+
+/* Grain, so the glass reads matte rather than glossy. */
+.prompt-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+}
+
+.prompt-glass:focus-within {
+  border-color: rgb(255 255 255 / 14%);
+}
+
+.prompt-dock.is-hidden .prompt-glass {
+  transform: translateY(calc(100% + 32px)) scale(0.98);
+  opacity: 0;
+}
+
+.prompt-caret {
+  display: inline-block;
+  width: 1.5px;
+  height: 1.05em;
+  margin-left: 1px;
+  vertical-align: -0.15em;
+  background: var(--color-muted);
+  animation: caret-blink 1.06s steps(1) infinite;
+}
+
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prompt-glass {
+    transition: opacity 120ms ease;
+  }
+
+  .prompt-dock.is-hidden .prompt-glass {
+    transform: none;
+  }
+
+  .prompt-caret {
+    animation: none;
+  }
+}
+
+/* node inspector ------------------------------------------------------------------------ */
+/*
+  The step settings card floating over the canvas. Its one loud element is the step rail of a
+  field pipeline: a dot per step and the value's type after it, so a reader sees `string?`
+  turn into `number`. Everything else stays at the app's quiet hairline level.
+*/
+:root {
+  --type-string: #b6bcc6;
+  --type-number: var(--color-num);
+  --type-boolean: var(--color-flag);
+  --type-date: #7fd1b9;
+  --type-list: #e8b07a;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.insp-anchor {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+.insp-card {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  width: 392px;
+  max-height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 14px;
+  background: rgb(15 16 17 / 96%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 4%),
+    0 24px 48px -16px rgb(0 0 0 / 75%),
+    0 2px 6px rgb(0 0 0 / 40%);
+  backdrop-filter: blur(12px);
+  transform-origin: top right;
+  animation: insp-in 260ms var(--ease-out) both;
+}
+
+.insp-card.is-closing {
+  pointer-events: none;
+  animation: insp-out 170ms ease-in both;
+}
+
+@keyframes insp-in {
+  from {
+    opacity: 0;
+    transform: translateX(18px) scale(0.98);
+  }
+}
+
+@keyframes insp-out {
+  to {
+    opacity: 0;
+    transform: translateX(14px) scale(0.985);
+  }
+}
+
+.insp-head {
+  flex-shrink: 0;
+  padding: 16px 16px 12px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.insp-tile {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  place-items: center;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 9px;
+  background: var(--color-raised);
+  color: var(--color-fg);
+}
+
+.insp-tile--source {
+  color: var(--color-num);
+}
+
+.insp-tile--target {
+  color: var(--color-ok);
+}
+
+.insp-tile--check {
+  color: var(--color-flag);
+}
+
+.insp-title {
+  width: 100%;
+  margin: -2px 0 0 -6px;
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-fg);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  transition:
+    border-color 120ms,
+    background-color 120ms;
+}
+
+.insp-title::placeholder {
+  color: var(--color-fg);
+}
+
+.insp-title:hover {
+  border-color: var(--color-line);
+}
+
+.insp-title:focus {
+  outline: none;
+  border-color: var(--color-line-strong);
+  background: var(--color-canvas);
+}
+
+.insp-close {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  place-items: center;
+  margin: -4px -6px 0 0;
+  border-radius: 7px;
+  color: var(--color-faint);
+  transition:
+    background-color 120ms,
+    color 120ms;
+}
+
+.insp-close:hover {
+  background: var(--color-raised);
+  color: var(--color-fg);
+}
+
+.insp-body {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px 16px 16px;
+  animation: insp-swap 180ms var(--ease-out) both;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+@keyframes insp-swap {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+.insp-foot {
+  display: flex;
+  flex-shrink: 0;
+  justify-content: flex-end;
+  padding: 10px 12px;
+  border-top: 1px solid var(--color-line);
+}
+
+.insp-remove {
+  display: inline-flex;
+  height: 28px;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 6px;
+  color: var(--color-muted);
+  font-size: 12.5px;
+  transition:
+    background-color 120ms,
+    color 120ms;
+}
+
+.insp-remove:hover {
+  background: rgb(235 111 111 / 10%);
+  color: var(--color-down);
+}
+
+.insp-group {
+  padding: 16px 0;
+}
+
+.insp-group + .insp-group {
+  border-top: 1px solid var(--color-line);
+}
+
+.insp-issues {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgb(235 111 111 / 22%);
+  border-radius: 8px;
+  background: rgb(235 111 111 / 6%);
+}
+
+/* Controls */
+.insp-input {
+  width: 100%;
+  height: 32px;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  background: var(--color-canvas);
+  color: var(--color-fg);
+  padding: 0 9px;
+  font-size: 13px;
+  transition:
+    border-color 120ms,
+    box-shadow 120ms;
+}
+
+.insp-input::placeholder {
+  color: var(--color-faint);
+}
+
+.insp-input:hover {
+  border-color: var(--color-line-strong);
+}
+
+.insp-input:focus {
+  outline: none;
+  border-color: #3a3d43;
+  box-shadow: 0 0 0 3px rgb(236 236 237 / 5%);
+}
+
+.insp-input.is-invalid,
+.insp-code.is-invalid {
+  border-color: rgb(235 111 111 / 55%);
+}
+
+.insp-switch {
+  position: relative;
+  width: 28px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 999px;
+  background: var(--color-canvas);
+  transition:
+    background-color 160ms,
+    border-color 160ms;
+}
+
+.insp-switch > span {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--color-muted);
+  transition:
+    transform 180ms var(--ease-out),
+    background-color 160ms;
+}
+
+.insp-switch[aria-checked='true'] {
+  border-color: transparent;
+  background: var(--color-fg);
+}
+
+.insp-switch[aria-checked='true'] > span {
+  transform: translateX(12px);
+  background: var(--color-frame);
+}
+
+.insp-seg {
+  display: inline-flex;
+  max-width: 100%;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-canvas);
+}
+
+.insp-seg > button {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  border-radius: 6px;
+  color: var(--color-muted);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition:
+    background-color 120ms,
+    color 120ms;
+}
+
+.insp-seg--md {
+  display: flex;
+  width: 100%;
+}
+
+.insp-seg--md > button {
+  height: 26px;
+  padding: 0 8px;
+  font-size: 12.5px;
+}
+
+.insp-seg--sm > button {
+  height: 22px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.insp-seg > button:hover {
+  color: var(--color-fg);
+}
+
+.insp-seg > button.is-on {
+  background: var(--color-selected);
+  box-shadow: inset 0 0 0 1px var(--color-line-strong);
+  color: var(--color-fg);
+}
+
+.tchip {
+  display: inline-flex;
+  height: 18px;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0 6px;
+  border-radius: 5px;
+  background: rgb(255 255 255 / 4%);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  white-space: nowrap;
+  color: var(--type-string);
+}
+
+.tchip--number {
+  color: var(--type-number);
+}
+
+.tchip--boolean {
+  color: var(--type-boolean);
+}
+
+.tchip--date {
+  color: var(--type-date);
+}
+
+.tchip--list,
+.tchip--tuple,
+.tchip--record {
+  color: var(--type-list);
+}
+
+.tchip--unknown,
+.tchip--never,
+.tchip--none {
+  color: var(--color-faint);
+}
+
+.tchip-q {
+  margin-left: 1px;
+  color: var(--color-faint);
+}
+
+.insp-chip {
+  display: inline-flex;
+  max-width: 100%;
+  height: 24px;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px 0 8px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 6px;
+  background: var(--color-raised);
+  font-size: 12px;
+}
+
+.insp-chip.is-missing {
+  border-color: rgb(235 111 111 / 45%);
+  color: var(--color-down);
+}
+
+.insp-chip > button {
+  display: grid;
+  width: 16px;
+  height: 16px;
+  place-items: center;
+  border-radius: 4px;
+  color: var(--color-faint);
+}
+
+.insp-chip > button:hover {
+  background: var(--color-selected);
+  color: var(--color-fg);
+}
+
+.insp-chipbox {
+  display: flex;
+  min-height: 32px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 6px;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  background: var(--color-canvas);
+}
+
+.insp-chipbox:focus-within {
+  border-color: #3a3d43;
+}
+
+.insp-add {
+  display: flex;
+  width: 100%;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px dashed var(--color-line-strong);
+  border-radius: 7px;
+  color: var(--color-muted);
+  font-size: 12.5px;
+  transition:
+    border-color 120ms,
+    color 120ms,
+    background-color 120ms;
+}
+
+.insp-add:hover,
+.insp-add[data-state='open'] {
+  border-color: #3a3d43;
+  background: var(--color-raised);
+  color: var(--color-fg);
+}
+
+.insp-note {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--color-faint);
+}
+
+.insp-note--warn {
+  padding: 8px 10px;
+  border: 1px solid rgb(233 207 114 / 22%);
+  border-radius: 7px;
+  background: rgb(233 207 114 / 6%);
+  color: #d9c78a;
+}
+
+.insp-preset {
+  height: 20px;
+  padding: 0 6px;
+  border: 1px solid var(--color-line);
+  border-radius: 5px;
+  color: var(--color-faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  transition:
+    border-color 120ms,
+    color 120ms;
+}
+
+.insp-preset:hover,
+.insp-preset.is-on {
+  border-color: var(--color-line-strong);
+  color: var(--color-fg);
+}
+
+.insp-check {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--color-fg);
+}
+
+.insp-code {
+  width: 100%;
+  resize: vertical;
+  padding: 8px 10px;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  background: var(--color-canvas);
+  color: var(--color-fg);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.insp-code:focus {
+  outline: none;
+  border-color: #3a3d43;
+}
+
+/* Lists of fields, inputs, columns */
+.insp-schema {
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+}
+
+.insp-schema > li {
+  display: flex;
+  height: 30px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 6px 0 10px;
+  font-size: 12.5px;
+}
+
+.insp-schema > li + li {
+  border-top: 1px solid var(--color-line);
+}
+
+.insp-schema .tchip {
+  margin-left: auto;
+}
+
+.insp-inputs > li {
+  display: flex;
+  height: 34px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px 0 10px;
+  border: 1px solid var(--color-line);
+  border-radius: 7px;
+  font-size: 12.5px;
+}
+
+.insp-inputs > li + li {
+  margin-top: 4px;
+}
+
+.insp-side {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-canvas);
+}
+
+.insp-column {
+  padding: 8px 10px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+}
+
+.insp-case,
+.insp-cond-row {
+  padding: 10px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: rgb(255 255 255 / 1.2%);
+}
+
+.insp-cond-row {
+  padding: 8px;
+}
+
+/* Map fields */
+.insp-fieldcard {
+  padding: 8px;
+  border: 1px solid var(--color-line);
+  border-radius: 9px;
+  background: rgb(255 255 255 / 1.2%);
+  transition: border-color 160ms;
+}
+
+.insp-fieldcard.is-open {
+  border-color: var(--color-line-strong);
+}
+
+.insp-fieldcard.has-error {
+  border-color: rgb(235 111 111 / 40%);
+}
+
+.insp-disclosure {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 5px;
+  color: var(--color-faint);
+}
+
+.insp-disclosure:hover {
+  background: var(--color-raised);
+  color: var(--color-fg);
+}
+
+.insp-summary {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 0 4px 0 28px;
+  overflow: hidden;
+  color: var(--color-faint);
+  font-size: 12px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.insp-summary:hover {
+  color: var(--color-muted);
+}
+
+.insp-summary-detail {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--color-muted);
+}
+
+.insp-summary-arrow {
+  margin: 0 6px;
+  color: var(--color-faint);
+}
+
+/* A mono select still shows its placeholder in the UI face. */
+.insp-card button[data-placeholder] {
+  font-family: var(--font-sans);
+  font-size: 13px;
+}
+
+/* The step rail: a dot per step on one continuous line. */
+.insp-steps {
+  position: relative;
+  padding-left: 18px;
+}
+
+.insp-steps::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  bottom: 14px;
+  left: 4px;
+  width: 1px;
+  background: linear-gradient(var(--color-line-strong), var(--color-line-strong) 70%, transparent);
+}
+
+.insp-step {
+  position: relative;
+  padding-bottom: 14px;
+}
+
+.insp-step::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: -18px;
+  width: 9px;
+  height: 9px;
+  border: 1px solid var(--color-muted);
+  border-radius: 999px;
+  background: var(--color-frame);
+  box-shadow: 0 0 0 3px var(--color-frame);
+}
+
+.insp-step.has-error::before {
+  border-color: var(--color-down);
+  background: var(--color-down);
+}
+
+.insp-step--add {
+  padding-bottom: 0;
+}
+
+.insp-step--add::before {
+  top: 10px;
+  border-style: dashed;
+  border-color: var(--color-faint);
+}
+
+.insp-op-trigger {
+  display: inline-flex;
+  height: 26px;
+  align-items: center;
+  gap: 5px;
+  margin-left: -6px;
+  padding: 0 6px;
+  border-radius: 6px;
+  color: var(--color-fg);
+  font-size: 13px;
+  font-weight: 550;
+  transition: background-color 120ms;
+}
+
+.insp-op-trigger:hover,
+.insp-op-trigger[data-state='open'] {
+  background: var(--color-raised);
+}
+
+.insp-step-tools {
+  display: flex;
+  opacity: 0;
+  transition: opacity 120ms;
+}
+
+.insp-step:hover > div > span > .insp-step-tools,
+.insp-step:focus-within > div > span > .insp-step-tools {
+  opacity: 1;
+}
+
+.insp-nested {
+  padding: 10px 10px 2px;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-canvas);
+}
+
+/* JSON mode */
+.insp-json {
+  padding-top: 16px;
+}
+
+.insp-json-box {
+  display: flex;
+  height: min(440px, 52vh);
+  overflow: hidden;
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  background: var(--color-canvas);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.insp-json-box:focus-within {
+  border-color: #3a3d43;
+}
+
+.insp-json-box.is-invalid {
+  border-color: rgb(235 111 111 / 55%);
+}
+
+.insp-json-gutter {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow: hidden;
+  padding: 10px 8px 10px 10px;
+  border-right: 1px solid var(--color-line);
+  color: var(--color-faint);
+  text-align: right;
+  user-select: none;
+}
+
+.insp-json-box textarea {
+  flex: 1;
+  resize: none;
+  padding: 10px 12px;
+  background: transparent;
+  color: var(--color-fg);
+  white-space: pre;
+  tab-size: 2;
+}
+
+.insp-json-box textarea:focus {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Near-instant, not none, so the exit still ends and the card unmounts. */
+  .insp-card,
+  .insp-card.is-closing,
+  .insp-body {
+    animation-duration: 1ms;
+  }
+
+  .insp-switch,
+  .insp-switch > span {
+    transition: none;
+  }
+}
+
+/* Both faces rotate together inside a stationary hit area. */
+.mask-logo {
+  perspective: 240px;
+}
+
+.mask-logo-spinner {
+  position: relative;
+  display: block;
+  transform-style: preserve-3d;
+}
+
+.mask-logo-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.mask-logo-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.mask-logo-front {
+  filter: invert(1) brightness(0.9);
+  transform: translateZ(0.1px);
+}
+
+.mask-logo-back {
+  filter: invert(1);
+  /* Match the front's visible height and center despite the rear asset's padding. */
+  transform: rotateY(180deg) translateZ(0.1px) scale(1.103) translate(-0.8%, -0.64%);
+}
+
+/*
+ * One full turn on hover: it winds up, swings past the front by a few degrees and settles,
+ * lifting slightly while the interior shows. The lift is the separate `scale` property, so
+ * it eases on its own curve instead of following the rotation's segments.
+ */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .mask-logo-spinner.is-turning {
+    animation:
+      mask-turn 950ms cubic-bezier(0.6, 0, 0.25, 1.1),
+      mask-lift 950ms cubic-bezier(0.45, 0, 0.55, 1);
+  }
+}
+
+@keyframes mask-turn {
+  from {
+    transform: rotateY(0deg);
+  }
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+@keyframes mask-lift {
+  50% {
+    scale: 1.12;
+  }
+}

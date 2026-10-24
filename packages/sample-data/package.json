@@ -1,0 +1,16 @@
+{
+  "name": "sample-data",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Demo data: a deterministic sample dataset for a fictional outdoor-gear retailer (NetSuite + Snowflake) that the demo sources serve.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vp test"
+  },
+  "devDependencies": {
+    "vite-plus": "catalog:"
+  }
+}

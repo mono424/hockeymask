@@ -1,0 +1,18 @@
+packages:
+  - 'packages/*'
+  - 'apps/*'
+  - 'tests/*'
+
+catalog:
+  vite: npm:@voidzero-dev/vite-plus-core@1.0.0
+  vite-plus: 1.0.0
+
+# Everything that asks for `vite` (plugins, the bundled Vitest) gets the Vite+ core.
+overrides:
+  vite: 'catalog:'
+
+onlyBuiltDependencies:
+  - esbuild
+
+# vite-plus bundles its own Vitest; auto-installed peers would pull a second copy.
+autoInstallPeers: false

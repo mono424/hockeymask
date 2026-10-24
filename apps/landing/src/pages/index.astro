@@ -1,0 +1,143 @@
+---
+import '@fontsource-variable/manrope';
+import '@fontsource/ibm-plex-mono/400.css';
+import '../styles/global.css';
+const base = import.meta.env.BASE_URL;
+const repo = import.meta.env.PUBLIC_REPOSITORY_URL;
+const stages = [
+  { id: 'source', number: '01', title: 'Declare what comes in.', text: 'Describe each source collection and its relationships. Start with one table, a group of related entities, or an entire external data model.' },
+  { id: 'join', number: '02', title: 'Transform at two scales.', text: 'Join, filter, and aggregate whole collections. Inside a map node, small typed pipelines extract, clean, and convert individual fields.' },
+  { id: 'output', number: '03', title: 'Define what goes out.', text: 'Send each result to its target entity through a sink. Reuse intermediate results across branches instead of copying transformation logic.' },
+];
+// Architecture excerpt, not an executable API example or a complete mapping document.
+const snippet = JSON.stringify({
+  id: 'products',
+  op: 'map',
+  in: 'items',
+  fields: [{
+    key: 'product.base_unit_weight',
+    pipeline: [
+      { op: 'extract', path: ['weight', 'weightunit'] },
+      { op: 'convert_unit', to: 'g' },
+    ],
+  }],
+}, null, 2);
+const exampleInput = { items: [{ itemid: 'BOOK-01', weight: 2, weightunit: 'kg' }] };
+
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Hockeymask models data mapping as a typed graph: transform collections, compose field pipelines, and version source assumptions with output expectations." />
+    <meta name="theme-color" content="#151719" />
+    <meta property="og:title" content="Hockeymask | Different schemas. Same story." />
+    <meta property="og:description" content="Typed collections. Explicit transformations. A versioned contract for your data." />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
+    <title>Hockeymask | Different schemas. Same story.</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="page-shell">
+      <header>
+        <a class="brand" href={base} aria-label="Hockeymask home"><img src={`${base}hockeymask.png`} width="40" height="40" alt="" />hockeymask</a>
+        <nav aria-label="Main navigation"><a href="#how-it-works">How it works</a><a href="#get-started">Developers</a></nav>
+        <a class="header-cta" href={repo || '#get-started'}>{repo ? 'View on GitHub' : 'Explore the toolkit'} <span aria-hidden="true">↗</span></a>
+      </header>
+      <main id="main">
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="hero-top">
+            <div>
+              <p class="eyebrow"><span class="status-dot"></span> TYPED GRAPHS FOR DATA MAPPING</p>
+              <h1 id="hero-title">Different schemas.<br /><span>Same story.</span></h1>
+            </div>
+            <div class="hero-intro"><p>Map the fields. <br />Connect the whole model.</p><p class="muted">Join collections. Transform individual fields.<br class="desktop-break" /> Describe the journey from source to target.</p><a class="primary-button" href="#mapping">See the flow <span aria-hidden="true">↘</span></a></div>
+          </div>
+          <div class="workbench" id="mapping">
+            <div class="bench-toolbar"><span><span class="tiny-mark">⌘</span> books_to_catalog<span class="file-extension">.graph</span></span><span class="bench-type"><span class="status-dot"></span> INTERACTIVE WALKTHROUGH</span></div>
+            <p class="mobile-graph-hint">Swipe to follow the graph <span aria-hidden="true">→</span></p>
+            <div class="graph-scroll" tabindex="0" role="region" aria-label="Schema mapping diagram. Scroll horizontally on small screens.">
+              <div class="graph">
+                <div class="graph-label label-input">01 / SOURCE COLLECTIONS</div><div class="graph-label label-transform">02 / TRANSFORMATION GRAPH</div><div class="graph-label label-output">03 / TARGET ENTITY</div>
+                <svg class="wires" viewBox="0 0 1100 410" fill="none" aria-hidden="true">
+                  <path d="M256 135H307Q324 135 324 153V194Q324 212 343 212H385" /><path d="M256 307H307Q324 307 324 289V230Q324 212 343 212H385" />
+                  <path class="active-wire" d="M543 212H586"/><path class="active-wire" d="M752 212H817"/>
+                  <path class="relation-wire" d="M91 211V243"/>
+                  <circle cx="324" cy="212" r="3"/><circle cx="566" cy="212" r="3"/><circle cx="785" cy="212" r="3"/>
+                </svg>
+                <button class="schema-node books selected" data-stage="source" aria-pressed="true"><span class="node-heading"><span class="table-icon">▦</span> books <span class="node-badge">[ ]</span></span><span class="node-fields"><span><b>id</b><i>string</i></span><span><b>title</b><i>string</i></span><span><b>author_id</b><i class="blue">↗ authors.id</i></span></span><span class="port port-right"></span></button>
+                <button class="schema-node authors selected" data-stage="source" aria-pressed="true"><span class="node-heading"><span class="table-icon">▦</span> authors <span class="node-badge">[ ]</span></span><span class="node-fields"><span><b>id</b><i>string</i></span><span><b>first_name</b><i>string</i></span><span><b>last_name</b><i>string</i></span></span><span class="port port-right"></span></button>
+                <button class="operation join" data-stage="join" aria-pressed="false"><span class="op-icon" aria-hidden="true">⋈</span><strong>Join</strong><code>author_id = id · n:1</code><span class="port port-left"></span><span class="port port-right"></span></button>
+                <button class="operation map" data-stage="map" aria-pressed="false"><span class="op-icon" aria-hidden="true">ƒ<span>x</span></span><strong>Map fields</strong><code>field pipelines</code><span class="port port-left"></span><span class="port port-right"></span></button>
+                <button class="schema-node catalog" data-stage="output" aria-pressed="false"><span class="node-heading"><span class="table-icon">▦</span> catalog <span class="node-badge">[ ]</span></span><span class="node-fields"><span><b>id</b><i>string</i></span><span><b>title</b><i>string</i></span><span><b>author</b><i>string</i></span></span><span class="target-foot">SINK / UPSERT BY ID</span><span class="port port-left"></span></button>
+                <div class="graph-note"><span aria-hidden="true">↳</span> Typed collections, connected by reference.</div>
+                <div class="graph-signature"><img src={`${base}hockeymask.png`} alt="" width="26" height="26" /> powered by hockeymask</div>
+              </div>
+            </div>
+            <div class="inspector" aria-live="polite"><span id="step-number" class="step-number">01 / INPUT</span><p id="step-description">Two typed collections enter through source nodes. Books reference authors through <code>author_id</code>.</p><span class="click-hint">Click a node to explore <span aria-hidden="true">↖</span></span></div>
+          </div>
+          <div class="hero-footer"><p>SOURCE <span>→</span> TRANSFORM <span>→</span> SINK</p><span>Built with TypeScript <span class="ts-badge">TS</span></span></div>
+        </section>
+        <section class="explanation" id="how-it-works" aria-labelledby="how-title">
+          <div class="section-heading"><p class="eyebrow">COLLECTIONS OUTSIDE. FIELD PIPELINES INSIDE.</p><h2 id="how-title">More than a<br />field-to-field mapper.</h2><p class="muted">A field rename is one step. A multi-table transformation is a graph.<br />The architecture gives both a place in the same model.</p></div>
+          <div class="steps">{stages.map(stage => <article><span class="step-index">{stage.number} <span aria-hidden="true">/</span></span><h3>{stage.title}</h3><p>{stage.text}</p></article>)}</div>
+          <div class="data-example"><div class="example-heading"><div><span class="eyebrow">INSIDE A MAP NODE</span><h3>2 kilograms in. 2,000 grams out.</h3></div><div class="segmented" role="group" aria-label="Example data view"><button data-view="input" aria-pressed="true">Input</button><button data-view="output" aria-pressed="false">Output <span aria-hidden="true">↗</span></button></div></div><div class="example-body"><pre id="example-json" tabindex="0" aria-label="Example input data">{JSON.stringify(exampleInput, null, 2)}</pre><div class="example-caption"><span class="small-cross" aria-hidden="true">＋</span><p id="example-caption">The source carries both a value and its unit. Extract them together so the conversion has the context it needs.</p><span class="example-disclaimer">Illustrative field pipeline from the architecture</span></div></div><p class="sr-only" id="view-status" aria-live="polite"></p></div>
+        </section>
+        <section class="developer" id="get-started" aria-labelledby="developer-title"><div><p class="eyebrow">DESIGNED FOR CHANGE</p><h2 id="developer-title">A mapping.<br />And its promises.</h2><p class="muted">The planned mapping document keeps the graph, source assumptions, and output expectations in one immutable published version.</p><div class="package-list"><div><code>expectedSchema</code><span>Source contracts in JSON Schema, authorable with Zod.</span></div><div><code>expect + assert</code><span>Check counts, uniqueness, and rows before downstream work.</span></div><div><code>graph + version + snapshot</code><span>Keep transformations auditable, replayable, and reversible.</span></div></div><p class="development-note"><span class="status-dot"></span> Available now: schema types, connectors, and a React graph builder. The compiler, executor, and versioned contracts described here are the architecture being built.</p>{repo && <a class="text-link" href={`${repo}#readme`}>Read the project docs <span aria-hidden="true">↗</span></a>}</div><div class="code-panel"><div class="code-heading"><span>map-node.json / architecture excerpt</span><button id="copy-code" aria-label="Copy mapping JSON">Copy <span aria-hidden="true">⧉</span></button></div><pre tabindex="0"><code id="starter-code">{snippet}</code></pre><div class="code-bottom"><span class="status-dot"></span> Extract value + unit → convert to grams</div><span class="sr-only" id="copy-status" aria-live="polite"></span></div></section>
+      </main>
+      <footer><a class="brand" href={base}><img src={`${base}hockeymask.png`} width="30" height="30" alt="" />hockeymask</a><p>Give your data a new identity.</p><a href="#main">Back to top <span aria-hidden="true">↑</span></a></footer>
+    </div>
+    <script>
+      const descriptions: Record<string, [string, string]> = {
+        source: ['01 / SOURCE', 'Source nodes provide typed collections. Each declares the schema its mapping expects.'],
+        join: ['02 / JOIN', 'Match books.author_id to authors.id. An n:1 join declares at most one author match per book.'],
+        map: ['03 / MAP', 'Each output field has a typed pipeline: extract id and title, then combine the author name.'],
+        output: ['04 / SINK', 'A sink writes the catalog entity using id as its upsert key. Upstream transformations stay pure.'],
+      };
+      document.querySelectorAll<HTMLButtonElement>('[data-stage]').forEach(button => {
+        button.addEventListener('click', () => {
+          const stage = button.dataset.stage!;
+          document.querySelectorAll<HTMLButtonElement>('[data-stage]').forEach(node => {
+            const selected = node.dataset.stage === stage;
+            node.classList.toggle('selected', selected);
+            node.setAttribute('aria-pressed', String(selected));
+          });
+          document.querySelector('#step-number')!.textContent = descriptions[stage][0];
+          document.querySelector('#step-description')!.textContent = descriptions[stage][1];
+        });
+      });
+      const source = { items: [{ itemid: 'BOOK-01', weight: 2, weightunit: 'kg' }] };
+      // Illustrates the documented pipeline for this fixed kilogram fixture, not an executor.
+      const target = { products: source.items.map(item => ({
+        'product.base_unit_weight': item.weight * 1000,
+      })) };
+      document.querySelectorAll<HTMLButtonElement>('[data-view]').forEach(button => {
+        button.addEventListener('click', () => {
+          const output = button.dataset.view === 'output';
+          document.querySelector('#example-json')!.textContent = JSON.stringify(output ? target : source, null, 2);
+          document.querySelector('#example-json')!.setAttribute('aria-label', output ? 'Example output data' : 'Example input data');
+          document.querySelector('#example-caption')!.textContent = output
+            ? 'The field pipeline extracts [weight, weightunit], converts kilograms to grams, and produces product.base_unit_weight.'
+            : 'The source carries both a value and its unit. Extract them together so the conversion has the context it needs.';
+          document.querySelector('#view-status')!.textContent = output ? 'Showing mapped output data.' : 'Showing source input data.';
+          document.querySelectorAll('[data-view]').forEach(tab => tab.setAttribute('aria-pressed', String(tab === button)));
+        });
+      });
+      document.querySelector('#copy-code')?.addEventListener('click', async () => {
+        const status = document.querySelector('#copy-status')!;
+        const button = document.querySelector('#copy-code')!;
+        try {
+          await navigator.clipboard.writeText(document.querySelector('#starter-code')!.textContent!);
+          button.textContent = 'Copied ✓';
+          status.textContent = 'Mapping JSON copied.';
+          window.setTimeout(() => { button.textContent = 'Copy ⧉'; }, 2000);
+        } catch {
+          status.textContent = 'Copy unavailable. Select and copy the code manually.';
+          button.textContent = 'Select code below';
+        }
+      });
+    </script>
+  </body>
+</html>
